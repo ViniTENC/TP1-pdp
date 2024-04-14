@@ -4,7 +4,6 @@ import Test.HUnit
 
 import Data.Either
 import Data.List
-import qualified Data.Type.Bool as o
 
 data Dirección = Norte | Sur | Este | Oeste
   deriving (Eq, Show)
@@ -112,17 +111,17 @@ es_una_gema o = isPrefixOf "Gema de" (nombre_objeto o)
 -- f1: Personaje -> a -> a
 -- f2: a -> Personaje -> Dirección -> a
 -- f3: a -> a
-foldPersonaje :: (Personaje -> a -> a) -> (a -> Personaje -> Dirección -> a) -> (a -> a) -> Personaje -> a
+foldPersonaje :: (Posición -> String -> a) -> (a -> Dirección -> a) -> (a -> a) -> Personaje -> a
 foldPersonaje f1 f2 f3 p = case p of
-                  Personaje pos str -> f1 p 
-                  Mueve p' d -> f2 (rec p') p' d
+                  Personaje pos str -> f1 pos str
+                  Mueve p' d -> f2 (rec p') d
                   Muere p' -> f3 (rec p')
                   where rec = foldPersonaje f1 f2 f3
 
-foldObjeto :: (Objeto -> a -> a) -> (a -> Personaje -> a) -> (a -> a) -> Objeto -> a
+foldObjeto :: (Posición -> String -> a) -> (a -> Personaje -> a) -> (a -> a) -> Objeto -> a
 foldObjeto f1 f2 f3 obj = case obj of
-                  Objeto pos str -> f1 obj str
-                  Tomado obj' p -> f2 (rec obj') p
+                  Objeto pos str -> f1 pos str
+                  Tomado obj p -> f2 (rec obj) p 
                   EsDestruido obj' -> f3 (rec obj')
                   where rec = foldObjeto f1 f2 f3
 
@@ -142,8 +141,16 @@ nombre_objeto :: Objeto -> String
 
 -- f1 es id porque, si es Objeto, quiero que me devuelva el nombre actual
 nombre_objeto = foldObjeto (\o str -> str) 
-                          (\obj p -> (\o str -> str) obj)  -- caso objeto tomado
-                          (\r -> (\o str -> str) obj)      --caso objeto destruido
+                          (\obj p -> (\o str -> str) obj)  -- caso objeto tomado, (opinion vini ) para mi aca esta mal ya que deberia devolver objeto y personaje, la parte de objeto esta bien y faltaria la de personaje
+                          (\r -> (\o str -> str) obj)      --caso objeto destruido, (opinion vini )  aca lo mismo, deberia devolver objeto solo, es decir (\o str -> str)
+
+
+-- pongo como lo haria yo, igual dudo de si no tenes que devolver el objeto y el personaje en los casos de Tomado y EsDestruido
+
+-- nombre_objeto = foldObjeto (\o str -> str) 
+                      --  (\obj p -> (\o str -> str) p)  
+                      --  (\r -> (\o str -> str))  
+
 
 -- {-Ejercicio 3-}
 
@@ -170,13 +177,13 @@ objetos_en_posesión_de p = foldr (\x rec -> if es_un_objeto x && en_posesión_d
 -- {-Ejercicio 5-}
 
 -- -- Asume que hay al menos un objeto
--- objeto_libre_mas_cercano :: ?
--- objeto_libre_mas_cercano = ?
+objeto_libre_mas_cercano :: Personaje -> Universo -> Objeto
+objeto_libre_mas_cercano p = foldr (\x rec -> if es_un_objeto x && objeto_libre x then if distancia (Left p) x < distancia (Left p) rec then x else rec else rec) (head $ objetos_en_posesión_de p)
 
 -- {-Ejercicio 6-}
 
--- tiene_thanos_todas_las_gemas :: ?
--- tiene_thanos_todas_las_gemas = ?
+tiene_thanos_todas_las_gemas :: Universo -> Bool
+tiene_thanos_todas_las_gemas = foldr (\x rec -> if es_un_personaje x && nombre_personaje x == "Thanos" && (foldl (\rec x -> if es_un_objeto x && es_una_gema x then rec + 1 else rec) 0) >= 6 then True else rec) False
 
 -- {-Ejercicio 7-}
 
