@@ -106,13 +106,6 @@ es_una_gema o = isPrefixOf "Gema de" (nombre_objeto o)
 
 {-Ejercicio 1-}
 
-<<<<<<< HEAD
--- recibe f1, f2 y f3; las funciones que se aplican a cada caso de Personaje
--- f1: Personaje -> a -> a
--- f2: a -> Personaje -> Dirección -> a
--- f3: a -> a
-=======
->>>>>>> ac5dc10a5bd267352c70c7e763ea7cdb9428483c
 foldPersonaje :: (Posición -> String -> a) -> (a -> Dirección -> a) -> (a -> a) -> Personaje -> a
 foldPersonaje f1 f2 f3 p = case p of
                   Personaje pos str -> f1 pos str
@@ -168,6 +161,7 @@ objetos_en_posesión_de p = foldr (\x rec -> if es_un_objeto x && en_posesión_d
 -- {-Ejercicio 5-}
 
 -- -- Asume que hay al menos un objeto
+-- Para mi aca falta chequear si es un objeto libre
 objeto_libre_mas_cercano :: Personaje -> Universo -> Objeto
 objeto_libre_mas_cercano p u = foldr1 (\obj rec -> if (distancia (Left p) (Right obj)) < (distancia (Left p) (Right rec)) then obj else rec) (objetos_en u )
 
